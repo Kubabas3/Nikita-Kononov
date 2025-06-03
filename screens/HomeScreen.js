@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  TextInput
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen({ navigation }) {
   const [treningi, setTreningi] = useState([]);
+  const [szukaj, setSzukaj] = useState(''); // Pole wyszukiwania
 
-  // Загрузка тренировок из хранилища при запуске
   useEffect(() => {
     const wczytajTreningi = async () => {
       try {
@@ -20,7 +29,6 @@ export default function HomeScreen({ navigation }) {
     wczytajTreningi();
   }, []);
 
-  // Удаление тренировки
   const usunTrening = async (id) => {
     const nowe = treningi.filter(t => t.id !== id);
     setTreningi(nowe);
@@ -34,12 +42,25 @@ export default function HomeScreen({ navigation }) {
     ]);
   };
 
+  // Filtrowanie na podstawie nazwy lub kategorii
+  const przefiltrowane = treningi.filter(t =>
+    t.nazwa.toLowerCase().includes(szukaj.toLowerCase()) ||
+    t.kategoria.toLowerCase().includes(szukaj.toLowerCase())
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>📋 Twoje treningi</Text>
 
+      <TextInput
+        style={styles.search}
+        placeholder="Szukaj treningu lub kategorii"
+        value={szukaj}
+        onChangeText={setSzukaj}
+      />
+
       <FlatList
-        data={treningi}
+        data={przefiltrowane}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -72,6 +93,13 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20 },
   header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  search: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 8
+  },
   item: {
     backgroundColor: '#f5f5f5',
     padding: 15,
