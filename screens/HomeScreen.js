@@ -8,11 +8,39 @@ import {
   TextInput,
   StyleSheet,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen({ navigation }) {
   const [treningi, setTreningi] = useState([]);
   const [szukaj, setSzukaj] = useState('');
+
+  // ⬇️ Wczytywanie danych przy starcie
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('treningi');
+        if (saved) {
+          setTreningi(JSON.parse(saved));
+        }
+      } catch (err) {
+        console.error('Błąd wczytywania treningów:', err);
+      }
+    };
+    loadData();
+  }, []);
+
+  // ⬇️ Zapis danych przy każdej zmianie
+  useEffect(() => {
+    const saveData = async () => {
+      try {
+        await AsyncStorage.setItem('treningi', JSON.stringify(treningi));
+      } catch (err) {
+        console.error('Błąd zapisu treningów:', err);
+      }
+    };
+    saveData();
+  }, [treningi]);
 
   const dodajTrening = (nowy) => {
     setTreningi((prev) => [nowy, ...prev]);
@@ -53,7 +81,10 @@ export default function HomeScreen({ navigation }) {
         data={filtrujTreningi()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View style={styles.item}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('WorkoutDetails', { trening: item })}
+            style={styles.item}
+          >
             <View style={{ flex: 1 }}>
               <Text style={styles.title}>{item.nazwa}</Text>
               <Text style={styles.subtitle}>{item.kategoria}</Text>
@@ -66,7 +97,7 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity onPress={() => usunTrening(item.id)}>
               <Ionicons name="trash-outline" size={24} color="red" />
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
       />
 
@@ -115,4 +146,3 @@ const styles = StyleSheet.create({
   },
   fabText: { fontSize: 30, color: 'white' },
 });
-
