@@ -3,110 +3,116 @@ import {
   View,
   Text,
   FlatList,
-  Button,
-  StyleSheet,
   TouchableOpacity,
   Alert,
-  TextInput
+  TextInput,
+  StyleSheet,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function HomeScreen({ navigation }) {
   const [treningi, setTreningi] = useState([]);
-  const [szukaj, setSzukaj] = useState(''); // Pole wyszukiwania
+  const [szukaj, setSzukaj] = useState('');
 
-  useEffect(() => {
-    const wczytajTreningi = async () => {
-      try {
-        const dane = await AsyncStorage.getItem('treningi');
-        if (dane !== null) {
-          setTreningi(JSON.parse(dane));
-        }
-      } catch (e) {
-        console.log('Błąd ładowania danych:', e);
-      }
-    };
-    wczytajTreningi();
-  }, []);
-
-  const usunTrening = async (id) => {
-    const nowe = treningi.filter(t => t.id !== id);
-    setTreningi(nowe);
-    await AsyncStorage.setItem('treningi', JSON.stringify(nowe));
+  const dodajTrening = (nowy) => {
+    setTreningi((prev) => [nowy, ...prev]);
   };
 
-  const potwierdzUsuniecie = (id) => {
+  const usunTrening = (id) => {
     Alert.alert('Usuń trening', 'Czy na pewno chcesz usunąć ten trening?', [
       { text: 'Anuluj', style: 'cancel' },
-      { text: 'Usuń', style: 'destructive', onPress: () => usunTrening(id) }
+      {
+        text: 'Usuń',
+        onPress: () => {
+          setTreningi((prev) => prev.filter((t) => t.id !== id));
+        },
+        style: 'destructive',
+      },
     ]);
   };
 
-  // Filtrowanie na podstawie nazwy lub kategorii
-  const przefiltrowane = treningi.filter(t =>
-    t.nazwa.toLowerCase().includes(szukaj.toLowerCase()) ||
-    t.kategoria.toLowerCase().includes(szukaj.toLowerCase())
-  );
+  const filtrujTreningi = () => {
+    const tekst = szukaj.toLowerCase();
+    return treningi.filter(
+      (t) =>
+        t.nazwa.toLowerCase().includes(tekst) ||
+        t.kategoria.toLowerCase().includes(tekst)
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>📋 Twoje treningi</Text>
-
       <TextInput
-        style={styles.search}
-        placeholder="Szukaj treningu lub kategorii"
+        style={styles.input}
+        placeholder="Szukaj po nazwie lub kategorii"
         value={szukaj}
         onChangeText={setSzukaj}
       />
 
       <FlatList
-        data={przefiltrowane}
+        data={filtrujTreningi()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            onLongPress={() => potwierdzUsuniecie(item.id)}
-            style={styles.item}
-          >
-            <Text style={styles.itemTitle}>{item.nazwa}</Text>
-            <Text style={styles.itemCategory}>Kategoria: {item.kategoria}</Text>
-            <Text style={styles.itemDate}>Data: {item.data}</Text>
-          </TouchableOpacity>
+          <View style={styles.item}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>{item.nazwa}</Text>
+              <Text style={styles.subtitle}>{item.kategoria}</Text>
+              {item.lokalizacja && (
+                <Text style={styles.coords}>
+                  📍 {item.lokalizacja.latitude.toFixed(3)}, {item.lokalizacja.longitude.toFixed(3)}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity onPress={() => usunTrening(item.id)}>
+              <Ionicons name="trash-outline" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
         )}
       />
 
-      <Button
-        title="Dodaj trening"
+      <TouchableOpacity
+        style={styles.fab}
         onPress={() =>
-          navigation.navigate('AddWorkout', {
-            onDodaj: async (nowy) => {
-              const nowe = [...treningi, nowy];
-              setTreningi(nowe);
-              await AsyncStorage.setItem('treningi', JSON.stringify(nowe));
-            }
-          })
+          navigation.navigate('AddWorkout', { onDodaj: dodajTrening })
         }
-      />
+      >
+        <Text style={styles.fabText}>＋</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  search: {
+  container: { flex: 1, padding: 16 },
+  input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#aaa',
+    borderRadius: 8,
     padding: 10,
-    marginBottom: 15,
-    borderRadius: 8
+    marginBottom: 10,
   },
   item: {
-    backgroundColor: '#f5f5f5',
-    padding: 15,
+    flexDirection: 'row',
+    padding: 14,
+    marginBottom: 10,
+    backgroundColor: '#f2f2f2',
     borderRadius: 10,
-    marginBottom: 10
+    alignItems: 'center',
   },
-  itemTitle: { fontSize: 18, fontWeight: 'bold' },
-  itemCategory: { fontStyle: 'italic', color: '#555' },
-  itemDate: { color: '#888' }
+  title: { fontSize: 16, fontWeight: 'bold' },
+  subtitle: { fontSize: 14, color: '#555' },
+  coords: { fontSize: 12, color: '#888', marginTop: 4 },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    backgroundColor: '#007bff',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fabText: { fontSize: 30, color: 'white' },
 });
+
