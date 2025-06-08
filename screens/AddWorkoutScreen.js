@@ -1,49 +1,60 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Image, Alert } from 'react-native';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
+import { useWorkoutContext } from '../context/WorkoutContext';
+import uuid from 'react-native-uuid';
+import { useNavigation } from '@react-navigation/native';
 
-export default function AddWorkoutScreen({ navigation, route }) {
-  const [nazwa, setNazwa] = useState('');
-  const [kategoria, setKategoria] = useState('');
+export default function AddWorkoutScreen() {
+  const { addWorkout } = useWorkoutContext();
+  const navigation = useNavigation();
 
-  const dodajTrening = async () => {
-    if (!nazwa || !kategoria) {
-      Alert.alert('Błąd', 'Uzupełnij wszystkie pola');
+  const [title, setTitle] = useState('');
+  const [photoUri, setPhotoUri] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [date, setDate] = useState(null);
+
+  const handleGetLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Brak dostępu do lokalizacji');
       return;
     }
 
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Brak zgody', 'Nie przyznano dostępu do lokalizacji.');
-        return;
-      }
+    let loc = await Location.getCurrentPositionAsync({});
+    setLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+  };
 
-      const lokalizacja = await Location.getCurrentPositionAsync({});
-      const nowyTrening = {
-        id: Date.now().toString(),
-        nazwa,
-        kategoria,
-        data: new Date().toLocaleDateString('pl-PL'),
-        lokalizacja: {
-          latitude: lokalizacja.coords.latitude,
-          longitude: lokalizacja.coords.longitude,
-        },
-      };
-
-      route.params.onDodaj(nowyTrening);
-      navigation.goBack();
-    } catch (e) {
-      Alert.alert('Błąd', 'Nie udało się pobrać lokalizacji.');
-      console.error(e);
+  const handleTakePhoto = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Brak dostępu do kamery');
+      return;
     }
+
+    const result = await ImagePicker.launchCameraAsync();
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const handleAddWorkout = () => {
+    if (!title) {
+      Alert.alert('Wpisz nazwę treningu');
+      return;
+    }
+
+    const newWorkout = {
+      id: uuid.v4(),
+      title,
+      location,
+      date: new Date().toLocaleString(),
+      photoUri,
+    };
+
+    addWorkout(newWorkout);
+    navigation.goBack();
   };
 
   return (
@@ -51,30 +62,48 @@ export default function AddWorkoutScreen({ navigation, route }) {
       <Text style={styles.label}>Nazwa treningu</Text>
       <TextInput
         style={styles.input}
-        value={nazwa}
-        onChangeText={setNazwa}
-        placeholder="np. Bieganie"
+        value={title}
+        onChangeText={setTitle}
+        placeholder="np. Siłownia, Cardio"
       />
-      <Text style={styles.label}>Kategoria</Text>
-      <TextInput
-        style={styles.input}
-        value={kategoria}
-        onChangeText={setKategoria}
-        placeholder="np. Kardio"
-      />
-      <Button title="Dodaj" onPress={dodajTrening} />
+
+      <Button title="Dodaj zdjęcie" onPress={handleTakePhoto} />
+      {photoUri && <Image source={{ uri: photoUri }} style={styles.image} />}
+
+      <Button title="Pobierz lokalizację" onPress={handleGetLocation} />
+      {location && (
+        <Text style={styles.info}>
+          Lokalizacja: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+        </Text>
+      )}
+
+      <Button title="Dodaj trening" onPress={handleAddWorkout} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, justifyContent: 'center' },
-  label: { fontSize: 16, marginBottom: 5 },
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    marginBottom: 15,
-    borderRadius: 8,
+    marginBottom: 12,
+    borderRadius: 4,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    marginVertical: 12,
+  },
+  info: {
+    marginVertical: 8,
   },
 });

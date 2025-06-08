@@ -1,148 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  TextInput,
-  StyleSheet,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React from 'react';
+import { View, FlatList, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useWorkoutContext } from '../context/WorkoutContext';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function HomeScreen({ navigation }) {
-  const [treningi, setTreningi] = useState([]);
-  const [szukaj, setSzukaj] = useState('');
+export default function HomeScreen() {
+  const { workouts, removeWorkout } = useWorkoutContext();
+  const navigation = useNavigation();
 
-  // ⬇️ Wczytywanie danych przy starcie
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('treningi');
-        if (saved) {
-          setTreningi(JSON.parse(saved));
-        }
-      } catch (err) {
-        console.error('Błąd wczytywania treningów:', err);
-      }
-    };
-    loadData();
-  }, []);
-
-  // ⬇️ Zapis danych przy każdej zmianie
-  useEffect(() => {
-    const saveData = async () => {
-      try {
-        await AsyncStorage.setItem('treningi', JSON.stringify(treningi));
-      } catch (err) {
-        console.error('Błąd zapisu treningów:', err);
-      }
-    };
-    saveData();
-  }, [treningi]);
-
-  const dodajTrening = (nowy) => {
-    setTreningi((prev) => [nowy, ...prev]);
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   };
 
-  const usunTrening = (id) => {
-    Alert.alert('Usuń trening', 'Czy na pewno chcesz usunąć ten trening?', [
-      { text: 'Anuluj', style: 'cancel' },
-      {
-        text: 'Usuń',
-        onPress: () => {
-          setTreningi((prev) => prev.filter((t) => t.id !== id));
-        },
-        style: 'destructive',
-      },
-    ]);
-  };
-
-  const filtrujTreningi = () => {
-    const tekst = szukaj.toLowerCase();
-    return treningi.filter(
-      (t) =>
-        t.nazwa.toLowerCase().includes(tekst) ||
-        t.kategoria.toLowerCase().includes(tekst)
-    );
-  };
+  const renderItem = ({ item }) => (
+    <View style={styles.workoutItem}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.title}>{item.title}</Text>
+        {item.category && <Text style={styles.category}>{item.category}</Text>}
+        {item.location && (
+          <Text style={styles.info}>
+            📍 {item.location.latitude.toFixed(4)}, {item.location.longitude.toFixed(4)}
+          </Text>
+        )}
+        {item.timestamp && (
+          <Text style={styles.info}>🕒 {formatDate(item.timestamp)}</Text>
+        )}
+      </View>
+      {item.photo && (
+        <Image source={{ uri: item.photo }} style={styles.photo} />
+      )}
+      <TouchableOpacity onPress={() => removeWorkout(item.id)}>
+        <Ionicons name="trash" size={24} color="red" />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Szukaj po nazwie lub kategorii"
-        value={szukaj}
-        onChangeText={setSzukaj}
-      />
-
       <FlatList
-        data={filtrujTreningi()}
+        data={workouts}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => navigation.navigate('WorkoutDetails', { trening: item })}
-            style={styles.item}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={styles.title}>{item.nazwa}</Text>
-              <Text style={styles.subtitle}>{item.kategoria}</Text>
-              {item.lokalizacja && (
-                <Text style={styles.coords}>
-                  📍 {item.lokalizacja.latitude.toFixed(3)}, {item.lokalizacja.longitude.toFixed(3)}
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => usunTrening(item.id)}>
-              <Ionicons name="trash-outline" size={24} color="red" />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
+        ListEmptyComponent={<Text style={styles.emptyText}>No workouts added yet.</Text>}
       />
-
       <TouchableOpacity
-        style={styles.fab}
-        onPress={() =>
-          navigation.navigate('AddWorkout', { onDodaj: dodajTrening })
-        }
+        style={styles.addButton}
+        onPress={() => navigation.navigate('AddWorkout')}
       >
-        <Text style={styles.fabText}>＋</Text>
+        <Text style={styles.addButtonText}>+</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#aaa',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
   },
-  item: {
+  workoutItem: {
     flexDirection: 'row',
-    padding: 14,
-    marginBottom: 10,
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f2f2f2',
+    padding: 15,
+    marginVertical: 8,
+    borderRadius: 8,
   },
-  title: { fontSize: 16, fontWeight: 'bold' },
-  subtitle: { fontSize: 14, color: '#555' },
-  coords: { fontSize: 12, color: '#888', marginTop: 4 },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#007bff',
+  title: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  category: {
+    fontSize: 14,
+    color: '#555',
+  },
+  info: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
+  photo: {
     width: 60,
     height: 60,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  addButton: {
+    backgroundColor: '#007AFF',
     borderRadius: 30,
+    width: 60,
+    height: 60,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
   },
-  fabText: { fontSize: 30, color: 'white' },
+  addButtonText: {
+    color: 'white',
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#888',
+    marginTop: 20,
+  },
 });
