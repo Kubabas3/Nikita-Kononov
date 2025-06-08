@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, FlatList, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+} from 'react-native';
 import { useWorkoutContext } from '../context/WorkoutContext';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,26 +21,29 @@ export default function HomeScreen() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.workoutItem}>
+    <TouchableOpacity
+      style={styles.workoutItem}
+      onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
+    >
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>{item.title}</Text>
         {item.category && <Text style={styles.category}>{item.category}</Text>}
-        {item.location && (
+        {item.coordinates && (
           <Text style={styles.info}>
-            📍 {item.location.latitude.toFixed(4)}, {item.location.longitude.toFixed(4)}
+            📍 {item.coordinates.latitude.toFixed(4)}, {item.coordinates.longitude.toFixed(4)}
           </Text>
         )}
         {item.timestamp && (
           <Text style={styles.info}>🕒 {formatDate(item.timestamp)}</Text>
         )}
       </View>
-      {item.photo && (
-        <Image source={{ uri: item.photo }} style={styles.photo} />
+      {item.imageUri && (
+        <Image source={{ uri: item.imageUri }} style={styles.photo} />
       )}
       <TouchableOpacity onPress={() => removeWorkout(item.id)}>
         <Ionicons name="trash" size={24} color="red" />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -42,7 +52,9 @@ export default function HomeScreen() {
         data={workouts}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.emptyText}>No workouts added yet.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No workouts added yet.</Text>
+        }
       />
       <TouchableOpacity
         style={styles.addButton}
