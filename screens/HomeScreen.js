@@ -1,124 +1,90 @@
-import React from 'react';
-import {
-  View,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-} from 'react-native';
-import { useWorkoutContext } from '../context/WorkoutContext';
-import { useNavigation } from '@react-navigation/native';
+import React, { useContext, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { WorkoutContext } from '../context/WorkoutContext';
 
-export default function HomeScreen() {
-  const { workouts, removeWorkout } = useWorkoutContext();
-  const navigation = useNavigation();
+const HomeScreen = ({ navigation }) => {
+  const { workouts, removeWorkout } = useContext(WorkoutContext);
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString();
-  };
+  const renderWorkout = useCallback(
+    ({ item }) => (
+      <View style={styles.cardWrapper}>
+        {/* Навигация передаёт весь объект тренировки */}
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
+        >
+          <Text style={styles.title}>{item.title}</Text>
+        </TouchableOpacity>
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.workoutItem}
-      onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={styles.title}>{item.title}</Text>
-        {item.category && <Text style={styles.category}>{item.category}</Text>}
-        {item.coordinates && (
-          <Text style={styles.info}>
-            📍 {item.coordinates.latitude.toFixed(4)}, {item.coordinates.longitude.toFixed(4)}
-          </Text>
-        )}
-        {item.timestamp && (
-          <Text style={styles.info}>🕒 {formatDate(item.timestamp)}</Text>
-        )}
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => removeWorkout(item.id)}
+        >
+          <Ionicons name="trash-outline" size={24} color="red" />
+        </TouchableOpacity>
       </View>
-      {item.imageUri && (
-        <Image source={{ uri: item.imageUri }} style={styles.photo} />
-      )}
-      <TouchableOpacity onPress={() => removeWorkout(item.id)}>
-        <Ionicons name="trash" size={24} color="red" />
-      </TouchableOpacity>
-    </TouchableOpacity>
+    ),
+    [navigation, removeWorkout]
   );
 
   return (
     <View style={styles.container}>
       <FlatList
         data={workouts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No workouts added yet.</Text>
-        }
+        keyExtractor={item => item.id.toString()}
+        renderItem={renderWorkout}
+        contentContainerStyle={styles.listContent}
       />
+
       <TouchableOpacity
-        style={styles.addButton}
+        style={styles.fab}
         onPress={() => navigation.navigate('AddWorkout')}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
     </View>
   );
-}
+};
+
+export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
   },
-  workoutItem: {
+  listContent: {
+    padding: 16,
+  },
+  cardWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: '#f2f2f2',
-    padding: 15,
-    marginVertical: 8,
     borderRadius: 8,
+    marginBottom: 12,
+  },
+  card: {
+    flex: 1,
+    padding: 16,
   },
   title: {
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#333',
   },
-  category: {
-    fontSize: 14,
-    color: '#555',
+  deleteButton: {
+    padding: 12,
   },
-  info: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 2,
-  },
-  photo: {
-    width: 60,
-    height: 60,
-    borderRadius: 6,
-    marginLeft: 10,
-  },
-  addButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 30,
-    width: 60,
-    height: 60,
+  fab: {
+    position: 'absolute',
+    right: 24,
+    bottom: 24,
+    backgroundColor: '#2979FF',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-  },
-  addButtonText: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#888',
-    marginTop: 20,
+    elevation: 4,
   },
 });
