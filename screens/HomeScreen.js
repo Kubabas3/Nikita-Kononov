@@ -1,5 +1,11 @@
 import React, { useContext, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutContext } from '../context/WorkoutContext';
 
@@ -12,7 +18,9 @@ const HomeScreen = ({ navigation }) => {
         {/* Навигация передаёт весь объект тренировки */}
         <TouchableOpacity
           style={styles.card}
-          onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
+          onPress={() =>
+            navigation.navigate('WorkoutDetails', { workout: item })
+          }
         >
           <Text style={styles.title}>{item.title}</Text>
         </TouchableOpacity>
@@ -25,7 +33,7 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     ),
-    [navigation, removeWorkout]
+    [navigation, removeWorkout],
   );
 
   return (

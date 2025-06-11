@@ -21,15 +21,14 @@ export const WorkoutProvider = ({ children }) => {
   }, []);
 
   /**
- * Dodaje nowy trening ze zdjęciem i lokalizacją, zapisuje w AsyncStorage.
- * @param {string} title – tytuł treningu
- * @param {string} photoUri – URI zdjęcia
- * @param {{ latitude: number, longitude: number }} location – współrzędne
- * @returns {Promise<void>}
- */
+   * Dodaje nowy trening ze zdjęciem i lokalizacją, zapisuje w AsyncStorage.
+   * @param {string} title – tytuł treningu
+   * @param {string} photoUri – URI zdjęcia
+   * @param {{ latitude: number, longitude: number }} location – współrzędne
+   * @returns {Promise<void>}
+   */
 
-
-  const addWorkout = async (workout) => {
+  const addWorkout = async workout => {
     const updated = [...workouts, workout];
     setWorkouts(updated);
     try {
@@ -40,14 +39,13 @@ export const WorkoutProvider = ({ children }) => {
   };
 
   /**
- * Usuwa trening o podanym ID i zapisuje zmiany w AsyncStorage.
- * @param {string} id - identyfikator treningu
- * @returns {Promise<void>}
- */
+   * Usuwa trening o podanym ID i zapisuje zmiany w AsyncStorage.
+   * @param {string} id - identyfikator treningu
+   * @returns {Promise<void>}
+   */
 
-
-  const removeWorkout = async (id) => {
-    const updated = workouts.filter((w) => w.id !== id);
+  const removeWorkout = async id => {
+    const updated = workouts.filter(w => w.id !== id);
     setWorkouts(updated);
     try {
       await AsyncStorage.setItem('workouts', JSON.stringify(updated));

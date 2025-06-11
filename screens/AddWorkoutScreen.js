@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Image, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Image,
+  Alert,
+} from 'react-native';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { useWorkoutContext } from '../context/WorkoutContext';
@@ -23,7 +31,10 @@ export default function AddWorkoutScreen() {
     }
 
     let loc = await Location.getCurrentPositionAsync({});
-    setLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+    setLocation({
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+    });
   };
 
   const handleTakePhoto = async () => {
@@ -73,7 +84,8 @@ export default function AddWorkoutScreen() {
       <Button title="Pobierz lokalizację" onPress={handleGetLocation} />
       {location && (
         <Text style={styles.info}>
-          Lokalizacja: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+          Lokalizacja: {location.latitude.toFixed(4)},{' '}
+          {location.longitude.toFixed(4)}
         </Text>
       )}
 

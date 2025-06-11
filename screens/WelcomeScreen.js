@@ -13,7 +13,10 @@ export default function WelcomeScreen({ navigation }) {
         resizeMode="contain"
       />
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('Home')}
+      >
         <Text style={styles.buttonText}>Zaczynamy</Text>
       </TouchableOpacity>
     </View>
