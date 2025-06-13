@@ -5,7 +5,7 @@ const WorkoutDetailsScreen = ({ route, navigation }) => {
   const { workout } = route.params;
   const [count, setCount] = useState(0);
   const [running, setRunning] = useState(false);
-useEffect(() => {
+  useEffect(() => {
   let interval;
   if (running) interval = setInterval(() => setCount(c => c + 1), 1000);
   return () => clearInterval(interval);

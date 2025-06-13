@@ -1,121 +1,129 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  Image,
+import React, { useState, useContext } from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  Button, 
+  Image, 
+  StyleSheet, 
   Alert,
+  ScrollView 
 } from 'react-native';
-import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
-import { useWorkoutContext } from '../context/WorkoutContext';
-import uuid from 'react-native-uuid';
-import { useNavigation } from '@react-navigation/native';
+import * as Location from 'expo-location';
+import { WorkoutContext } from '../context/WorkoutContext';
 
-export default function AddWorkoutScreen() {
-  const { addWorkout } = useWorkoutContext();
-  const navigation = useNavigation();
-
+export default function AddWorkoutScreen({ navigation }) {
   const [title, setTitle] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [location, setLocation] = useState(null);
-  const [date, setDate] = useState(null);
+  const { addWorkout } = useContext(WorkoutContext);
 
-  const handleGetLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Brak dostępu do lokalizacji');
-      return;
-    }
-
-    let loc = await Location.getCurrentPositionAsync({});
-    setLocation({
-      latitude: loc.coords.latitude,
-      longitude: loc.coords.longitude,
-    });
-  };
-
-  const handleTakePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Brak dostępu do kamery');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync();
-    if (!result.canceled) {
-      setPhotoUri(result.assets[0].uri);
+  const takePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Błąd', 'Brak dostępu do kamery.');
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync();
+      if (!result.canceled) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Błąd robienia zdjęcia:', error);
+      Alert.alert('Błąd', 'Nie udało się zrobić zdjęcia.');
     }
   };
 
-  const handleAddWorkout = () => {
+  const getLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Błąd', 'Dostęp do lokalizacji zabroniony.');
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync();
+      setLocation({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      });
+    } catch (error) {
+      console.error('Błąd pobierania lokalizacji:', error);
+      Alert.alert('Błąd', 'Nie udało się pobrać lokalizacji.');
+    }
+  };
+
+  const saveHandler = () => {
     if (!title) {
-      Alert.alert('Wpisz nazwę treningu');
+      Alert.alert('Błąd', 'Nazwa treningu jest wymagana.');
       return;
     }
-
-    const newWorkout = {
-      id: uuid.v4(),
-      title,
-      location,
-      date: new Date().toLocaleString(),
-      photoUri,
-    };
-
-    addWorkout(newWorkout);
-    navigation.goBack();
+    addWorkout(title, photoUri, location);
+    navigation.navigate('Home');
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Nazwa treningu</Text>
       <TextInput
         style={styles.input}
         value={title}
         onChangeText={setTitle}
-        placeholder="np. Siłownia, Cardio"
+        placeholder="Wprowadź nazwę treningu"
       />
 
-      <Button title="Dodaj zdjęcie" onPress={handleTakePhoto} />
+      <Button title="Zrób zdjęcie" onPress={takePhoto} />
       {photoUri && <Image source={{ uri: photoUri }} style={styles.image} />}
 
-      <Button title="Pobierz lokalizację" onPress={handleGetLocation} />
+      <View style={{ height: 16 }} />
+
+      <Button title="Pokaż lokalizację" onPress={getLocation} />
       {location && (
-        <Text style={styles.info}>
-          Lokalizacja: {location.latitude.toFixed(4)},{' '}
-          {location.longitude.toFixed(4)}
+        <Text style={styles.location}>
+          {location.latitude}, {location.longitude}
         </Text>
       )}
 
-      <Button title="Dodaj trening" onPress={handleAddWorkout} />
-    </View>
+      <View style={{ height: 24 }} />
+
+      <Button title="Zapisz" onPress={saveHandler} />
+
+      {/* Новая кнопка Powrót */}
+      <View style={{ marginTop: 12 }}>
+        <Button title="Powrót" onPress={() => navigation.navigate('Home')} />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 20,
+    padding: 16,
+    backgroundColor: '#fff',
   },
   label: {
     fontSize: 16,
     marginBottom: 8,
+    color: '#333',
   },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 12,
     borderRadius: 4,
+    marginBottom: 16,
+    padding: 8,
   },
   image: {
     width: '100%',
     aspectRatio: 16 / 9,
-    marginVertical: 12,
+    marginVertical: 16,
+    borderRadius: 8,
   },
-  info: {
-    marginVertical: 8,
+  location: {
+    fontSize: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    color: '#333',
   },
 });

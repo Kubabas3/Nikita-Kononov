@@ -1,3 +1,5 @@
+
+// context/WorkoutContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -23,14 +25,22 @@ export const WorkoutProvider = ({ children }) => {
   /**
    * Dodaje nowy trening ze zdjęciem i lokalizacją, zapisuje w AsyncStorage.
    * @param {string} title – tytuł treningu
-   * @param {string} photoUri – URI zdjęcia
-   * @param {{ latitude: number, longitude: number }} location – współrzędne
+   * @param {string|null} photoUri – URI zdjęcia
+   * @param {{ latitude: number, longitude: number }|null} location – współrzędne
    * @returns {Promise<void>}
    */
+  const addWorkout = async (title, photoUri, location) => {
+    const newWorkout = {
+      id: Date.now().toString(),
+      title,
+      photoUri: photoUri || null,
+      location: location || null,
+      date: new Date().toLocaleString(),
+    };
 
-  const addWorkout = async workout => {
-    const updated = [...workouts, workout];
+    const updated = [...workouts, newWorkout];
     setWorkouts(updated);
+
     try {
       await AsyncStorage.setItem('workouts', JSON.stringify(updated));
     } catch (error) {
@@ -43,10 +53,10 @@ export const WorkoutProvider = ({ children }) => {
    * @param {string} id - identyfikator treningu
    * @returns {Promise<void>}
    */
-
   const removeWorkout = async id => {
     const updated = workouts.filter(w => w.id !== id);
     setWorkouts(updated);
+
     try {
       await AsyncStorage.setItem('workouts', JSON.stringify(updated));
     } catch (error) {
@@ -62,3 +72,4 @@ export const WorkoutProvider = ({ children }) => {
 };
 
 export const useWorkoutContext = () => useContext(WorkoutContext);
+
