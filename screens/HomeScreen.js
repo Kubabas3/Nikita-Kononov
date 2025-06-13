@@ -1,17 +1,12 @@
-import React, { useContext, useCallback } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import React, { useContext, useCallback, useState } from 'react';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutContext } from '../context/WorkoutContext';
 
+
 const HomeScreen = ({ navigation }) => {
   const { workouts, removeWorkout } = useContext(WorkoutContext);
-
+  const [query, setQuery] = useState('');
   const renderWorkout = useCallback(
     ({ item }) => (
       <View style={styles.cardWrapper}>
@@ -38,8 +33,14 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <TextInput
+    style={styles.searchInput}
+    placeholder="Wyszukiwanie..."
+    value={query}
+    onChangeText={setQuery}
+  />
       <FlatList
-        data={workouts}
+        data={workouts.filter(w => w.title.toLowerCase().includes(query.toLowerCase()) )}
         keyExtractor={item => item.id.toString()}
         renderItem={renderWorkout}
         contentContainerStyle={styles.listContent}
@@ -95,4 +96,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
+  searchInput: {
+  height: 40,
+  marginHorizontal: 16,
+  marginTop: 30,
+  marginBottom: 8,
+  paddingHorizontal: 12,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: '#ccc',
+  }
 });

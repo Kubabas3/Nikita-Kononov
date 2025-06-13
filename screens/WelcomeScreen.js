@@ -1,15 +1,20 @@
 // Файл: screens/WelcomeScreen.js
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 
 export default function WelcomeScreen({ navigation }) {
+  const { width, height } = useWindowDimensions();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>FitJourney</Text>
 
       <Image
         source={require('../assets/undraw_morning-workout_73u9.png')}
-        style={styles.image}
+        style={[
+        styles.image,
+        { maxHeight: height * 0.4 }   // высота до 40% от высоты экрана
+        ]}
         resizeMode="contain"
       />
 
@@ -39,7 +44,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '90%',
-    height: 300,
+    aspectRatio: 16/9,
+    maxHeight: 300,
     marginBottom: 40,
   },
   button: {
