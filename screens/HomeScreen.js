@@ -5,7 +5,8 @@ import {
   FlatList,
   TouchableOpacity,
   TextInput,
-  StyleSheet
+  StyleSheet,
+  useWindowDimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutContext } from '../context/WorkoutContext';
@@ -13,8 +14,10 @@ import { WorkoutContext } from '../context/WorkoutContext';
 export default function HomeScreen({ navigation }) {
   const { workouts, removeWorkout } = useContext(WorkoutContext);
   const [query, setQuery] = useState('');
+  const { width, height } = useWindowDimensions();
+  const isPortrait = height >= width;
 
-  // Безопасная фильтрация: если title = undefined, приводим к пустой строке
+  // Безопасная фильтрация
   const filteredWorkouts = workouts.filter(w => {
     const title = typeof w.title === 'string' ? w.title : '';
     return title.toLowerCase().includes(query.trim().toLowerCase());
@@ -25,9 +28,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.cardWrapper}>
         <TouchableOpacity
           style={styles.card}
-          onPress={() =>
-            navigation.navigate('WorkoutDetails', { workout: item })
-          }
+          onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
         >
           <Text style={styles.title}>{item.title}</Text>
         </TouchableOpacity>
@@ -43,7 +44,7 @@ export default function HomeScreen({ navigation }) {
   );
 
   return (
-    <View style={styles.container}>
+    <View style={isPortrait ? styles.portraitContainer : styles.landscapeContainer}>
       <TextInput
         style={styles.searchInput}
         placeholder="Wyszukiwanie..."
@@ -51,14 +52,13 @@ export default function HomeScreen({ navigation }) {
         onChangeText={setQuery}
       />
       <FlatList
-     data={filteredWorkouts}
-     keyExtractor={(item, index) =>
-       item.id != null ? item.id.toString() : index.toString()
-     }
-     renderItem={renderWorkout}
-     contentContainerStyle={styles.listContent}
- />
-
+        data={filteredWorkouts}
+        keyExtractor={(item, index) =>
+          item.id != null ? item.id.toString() : index.toString()
+        }
+        renderItem={renderWorkout}
+        contentContainerStyle={styles.listContent}
+      />
       <TouchableOpacity
         style={styles.fab}
         onPress={() => navigation.navigate('AddWorkout')}
@@ -70,10 +70,17 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  portraitContainer: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 16
+    padding: 16,
+    flexDirection: 'column'
+  },
+  landscapeContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+    flexDirection: 'row'
   },
   searchInput: {
     height: 40,

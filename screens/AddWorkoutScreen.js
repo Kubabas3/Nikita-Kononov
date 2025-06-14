@@ -1,13 +1,8 @@
+// screens/AddWorkoutScreen.js
 import React, { useState, useContext } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Button, 
-  Image, 
-  StyleSheet, 
-  Alert,
-  ScrollView 
+import {
+  View, Text, TextInput, Button, Image,
+  StyleSheet, Alert, ScrollView
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -20,47 +15,34 @@ export default function AddWorkoutScreen({ navigation }) {
   const { addWorkout } = useContext(WorkoutContext);
 
   const takePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Błąd', 'Brak dostępu do kamery.');
-        return;
-      }
-      const result = await ImagePicker.launchCameraAsync();
-      if (!result.canceled) {
-        setPhotoUri(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error('Błąd robienia zdjęcia:', error);
-      Alert.alert('Błąd', 'Nie udało się zrobić zdjęcia.');
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Błąd', 'Brak dostępu do kamery.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync();
+    if (!result.canceled) {
+      setPhotoUri(result.assets[0].uri);
     }
   };
 
   const getLocation = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Błąd', 'Dostęp do lokalizacji zabroniony.');
-        return;
-      }
-      const loc = await Location.getCurrentPositionAsync();
-      setLocation({
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-      });
-    } catch (error) {
-      console.error('Błąd pobierania lokalizacji:', error);
-      Alert.alert('Błąd', 'Nie udało się pobrać lokalizacji.');
-    }
-  };
-
-  const saveHandler = () => {
-    if (!title) {
-      Alert.alert('Błąd', 'Nazwa treningu jest wymagana.');
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Błąd', 'Dostęp do lokalizacji zabroniony.');
       return;
     }
-    addWorkout(title, photoUri, location);
-    navigation.navigate('Home');
+    const loc = await Location.getCurrentPositionAsync();
+    setLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+  };
+
+  const saveHandler = async () => {
+    try {
+      await addWorkout(title, photoUri, location);
+      navigation.navigate('Home');
+    } catch (e) {
+      Alert.alert('Błąd', e.message);
+    }
   };
 
   return (
@@ -77,7 +59,6 @@ export default function AddWorkoutScreen({ navigation }) {
       {photoUri && <Image source={{ uri: photoUri }} style={styles.image} />}
 
       <View style={{ height: 16 }} />
-
       <Button title="Pokaż lokalizację" onPress={getLocation} />
       {location && (
         <Text style={styles.location}>
@@ -86,10 +67,8 @@ export default function AddWorkoutScreen({ navigation }) {
       )}
 
       <View style={{ height: 24 }} />
-
       <Button title="Zapisz" onPress={saveHandler} />
 
-      {/* Новая кнопка Powrót */}
       <View style={{ marginTop: 12 }}>
         <Button title="Powrót" onPress={() => navigation.navigate('Home')} />
       </View>
@@ -98,32 +77,9 @@ export default function AddWorkoutScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: '#fff',
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#333',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 16,
-    padding: 8,
-  },
-  image: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    marginVertical: 16,
-    borderRadius: 8,
-  },
-  location: {
-    fontSize: 16,
-    marginTop: 8,
-    marginBottom: 16,
-    color: '#333',
-  },
+  container: { padding: 16, backgroundColor: '#fff' },
+  label: { fontSize: 16, marginBottom: 8, color: '#333' },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 4, marginBottom: 16, padding: 8 },
+  image: { width: '100%', aspectRatio: 16 / 9, marginVertical: 16, borderRadius: 8 },
+  location: { fontSize: 16, marginTop: 8, marginBottom: 16, color: '#333' },
 });

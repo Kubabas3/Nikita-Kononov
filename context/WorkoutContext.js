@@ -1,7 +1,7 @@
-
 // context/WorkoutContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 export const WorkoutContext = createContext();
 
@@ -12,9 +12,7 @@ export const WorkoutProvider = ({ children }) => {
     const loadWorkouts = async () => {
       try {
         const data = await AsyncStorage.getItem('workouts');
-        if (data !== null) {
-          setWorkouts(JSON.parse(data));
-        }
+        if (data !== null) setWorkouts(JSON.parse(data));
       } catch (error) {
         console.error('Error loading workouts:', error);
       }
@@ -23,16 +21,17 @@ export const WorkoutProvider = ({ children }) => {
   }, []);
 
   /**
-   * Dodaje nowy trening ze zdjęciem i lokalizacją, zapisuje w AsyncStorage.
-   * @param {string} title – tytuł treningu
-   * @param {string|null} photoUri – URI zdjęcia
-   * @param {{ latitude: number, longitude: number }|null} location – współrzędne
-   * @returns {Promise<void>}
+   * Добавляет новый тренинг с валидацией и сохраняет базу + последний ID в SecureStore.
    */
   const addWorkout = async (title, photoUri, location) => {
+    const trimmed = title.trim();
+    if (trimmed.length < 3) {
+      throw new Error('Nazwa nie może być krótsza niż 3 znaki.');
+    }
+
     const newWorkout = {
       id: Date.now().toString(),
-      title,
+      title: trimmed,
       photoUri: photoUri || null,
       location: location || null,
       date: new Date().toLocaleString(),
@@ -43,20 +42,15 @@ export const WorkoutProvider = ({ children }) => {
 
     try {
       await AsyncStorage.setItem('workouts', JSON.stringify(updated));
+      await SecureStore.setItemAsync('lastWorkoutId', newWorkout.id);
     } catch (error) {
-      console.error('Error saving workout:', error);
+      console.error('Error saving workout or SecureStore:', error);
     }
   };
 
-  /**
-   * Usuwa trening o podanym ID i zapisuje zmiany w AsyncStorage.
-   * @param {string} id - identyfikator treningu
-   * @returns {Promise<void>}
-   */
   const removeWorkout = async id => {
     const updated = workouts.filter(w => w.id !== id);
     setWorkouts(updated);
-
     try {
       await AsyncStorage.setItem('workouts', JSON.stringify(updated));
     } catch (error) {
@@ -72,4 +66,3 @@ export const WorkoutProvider = ({ children }) => {
 };
 
 export const useWorkoutContext = () => useContext(WorkoutContext);
-
