@@ -32,11 +32,11 @@ const WorkoutDetailsScreen = ({ route, navigation }) => {
         <Text style={styles.timerText}>{count}s</Text>
         <Button
           title={running ? 'Stop' : 'Start'}
-          onPress={() => setRunning(r => !r)}
+          onPress={() => setRunning(r => !r) } color="#6f3dff"
     />
-      <Button title="Reset" onPress={() => setCount(0)} />
+      <Button title="Reset" onPress={() => setCount(0)} color="#6f3dff" />
     </View>
-      <Button title="Back" onPress={() => navigation.goBack()} />
+      <Button title="Back" onPress={() => navigation.goBack()} color="#6f3dff" />
     </View>
   );
 };
@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
     alignItems: 'center',
+  
   },
   title: {
     fontSize: 22,
@@ -67,6 +68,7 @@ const styles = StyleSheet.create({
   timerContainer: {
     marginTop: 20,
     alignItems: 'center',
+    
   },
   timerText: {
     fontSize: 24,
