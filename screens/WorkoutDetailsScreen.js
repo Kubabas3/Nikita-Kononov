@@ -1,20 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Button } from 'react-native';
+// screens/WorkoutDetailsScreen.js
 
-const WorkoutDetailsScreen = ({ route, navigation }) => {
+import React, { useContext } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  Button,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
+import { SettingsContext } from '../context/SettingsContext';
+
+export default function WorkoutDetailsScreen({ route, navigation }) {
   const { workout } = route.params;
-  const [count, setCount] = useState(0);
-  const [running, setRunning] = useState(false);
-  useEffect(() => {
-  let interval;
-  if (running) interval = setInterval(() => setCount(c => c + 1), 1000);
-  return () => clearInterval(interval);
-}, [running]);
+  const { translations } = useContext(SettingsContext);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{workout.name}</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Название тренировки */}
+      <Text style={styles.title}>{workout.title}</Text>
 
+      {/* Фото — сохраняем соотношение сторон */}
       {workout.photoUri && (
         <Image
           source={{ uri: workout.photoUri }}
@@ -23,56 +29,60 @@ const WorkoutDetailsScreen = ({ route, navigation }) => {
         />
       )}
 
+      {/* Локация */}
       {workout.location && (
-        <Text style={styles.location}>
-          Location: {workout.location.latitude}, {workout.location.longitude}
+        <Text style={styles.info}>
+          {translations.locationLabel}: {workout.location.latitude.toFixed(4)},{' '}
+          {workout.location.longitude.toFixed(4)}
         </Text>
       )}
-        <View style={styles.timerContainer}>
-        <Text style={styles.timerText}>{count}s</Text>
-        <Button
-          title={running ? 'Stop' : 'Start'}
-          onPress={() => setRunning(r => !r) } color="#6f3dff"
-    />
-      <Button title="Reset" onPress={() => setCount(0)} color="#6f3dff" />
-    </View>
-      <Button title="Back" onPress={() => navigation.goBack()} color="#6f3dff" />
-    </View>
-  );
-};
 
-export default WorkoutDetailsScreen;
+      {/* Дата */}
+      <Text style={styles.info}>
+        {translations.dateLabel}: {workout.date}
+      </Text>
+
+      {/* Кнопка «Назад» */}
+      <View style={styles.buttonContainer}>
+        <Button
+          title={translations.back}
+          onPress={() => navigation.goBack()}
+          color="#6f3dff"
+        />
+      </View>
+    </ScrollView>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    padding: 16,
+    padding: 30,
     backgroundColor: '#fff',
-    alignItems: 'center',
-  
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginVertical: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#333',
   },
   image: {
     width: '100%',
-    aspectRatio: 16 / 9,
-    marginBottom: 16,
+    height: 300,
+    marginBottom: 20,
+    borderRadius: 8,
   },
-  location: {
+  info: {
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 12,
+    color: '#333',
+    textAlign: 'center',
   },
-  timerContainer: {
+  buttonContainer: {
     marginTop: 20,
-    alignItems: 'center',
-    
+    alignSelf: 'center',
+    width: '50%',
   },
-  timerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-},
 });

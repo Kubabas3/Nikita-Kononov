@@ -5,6 +5,7 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import HomeScreen from '../screens/HomeScreen';
 import AddWorkoutScreen from '../screens/AddWorkoutScreen';
 import WorkoutDetailsScreen from '../screens/WorkoutDetailsScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 // Создаём стек
@@ -21,6 +22,7 @@ export default function AppNavigator() {
       <Stack.Screen name="AddWorkout" component={AddWorkoutScreen} />
       <Stack.Screen name="WorkoutDetails" component={WorkoutDetailsScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
     </Stack.Navigator>
   );
 }

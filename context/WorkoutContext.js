@@ -1,6 +1,7 @@
-// context/WorkoutContext.js
+// context/WorkoutContext.js — оставляем без изменений!
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SettingsContext } from './SettingsContext';
 import * as SecureStore from 'expo-secure-store';
 
 export const WorkoutContext = createContext();
@@ -20,9 +21,6 @@ export const WorkoutProvider = ({ children }) => {
     loadWorkouts();
   }, []);
 
-  /**
-   * Добавляет новый тренинг с валидацией и сохраняет базу + последний ID в SecureStore.
-   */
   const addWorkout = async (title, photoUri, location) => {
     const trimmed = title.trim();
     if (trimmed.length < 3) {

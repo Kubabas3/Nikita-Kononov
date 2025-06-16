@@ -1,0 +1,23 @@
+{
+  "welcome": "Zaczynamy",
+  "searchPlaceholder": "Wyszukiwanie...",
+  "addWorkout": "Dodaj trening",
+  "settings": "Ustawienia",
+  "themeLabel": "Motyw aplikacji",
+  "langLabel": "Język interfejsu",
+  "light": "Jasny",
+  "dark": "Ciemny",
+  "english": "Angielski",
+  "polish": "Polski",
+  "back": "Powrót",
+  "homeTitle": "Główna",
+  "noWorkouts": "Brak treningów.",
+  "workoutName": "Nazwa treningu",
+  "namePlaceholder": "Wprowadź nazwę treningu",
+  "takePhoto": "Zrób zdjęcie",
+  "getLocation": "Pobierz lokalizację",
+  "locationLabel": "Lokalizacja",
+  "addButton": "Dodaj trening",
+  "dateLabel": "Data",
+  "nameTooShort": "Nazwa musi mieć co najmniej 3 znaki."
+}

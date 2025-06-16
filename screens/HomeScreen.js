@@ -1,4 +1,5 @@
-import React, { useContext, useCallback, useState } from 'react';
+// screens/HomeScreen.js
+import React, { useContext, useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,19 +11,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutContext } from '../context/WorkoutContext';
+import { SettingsContext } from '../context/SettingsContext';
 
 export default function HomeScreen({ navigation }) {
   const { workouts, removeWorkout } = useContext(WorkoutContext);
+  const { translations, locale } = useContext(SettingsContext);
+  const { theme } = useContext(SettingsContext);
   const [query, setQuery] = useState('');
   const { width, height } = useWindowDimensions();
   const isPortrait = height >= width;
+ 
 
-  // Безопасная фильтрация
-  const filteredWorkouts = workouts.filter(w => {
-    const title = typeof w.title === 'string' ? w.title : '';
-    return title.toLowerCase().includes(query.trim().toLowerCase());
-  });
-
+  // Рендер одного элемента — мемоизируем для FlatList
   const renderWorkout = useCallback(
     ({ item }) => (
       <View style={styles.cardWrapper}>
@@ -43,13 +43,38 @@ export default function HomeScreen({ navigation }) {
     [navigation, removeWorkout]
   );
 
+  // Безопасная фильтрация
+  const filteredWorkouts = workouts.filter(w => {
+    const title = typeof w.title === 'string' ? w.title : '';
+    return title.toLowerCase().includes(query.trim().toLowerCase());
+  });
+
+  // Добавляем кнопку Settings в header
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+          <Ionicons
+            name="settings-outline"
+            size={24}
+            color={theme === 'dark' ? '#fff' : '#000'}
+            style={{ marginRight: 16 }}
+          />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, theme]);
+
   return (
     <View style={isPortrait ? styles.portraitContainer : styles.landscapeContainer}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Wyszukiwanie..."
+        
+        placeholder={translations.searchPlaceholder}
         value={query}
         onChangeText={setQuery}
+        placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
       />
       <FlatList
         data={filteredWorkouts}

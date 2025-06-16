@@ -13,14 +13,14 @@ export default function WelcomeScreen({ navigation }) {
         source={require('../assets/undraw_morning-workout_73u9.png')}
         style={[
         styles.image,
-        { maxHeight: height * 0.4 }   // высота до 40% от высоты экрана
+        { maxHeight: height * 0.4 } 
         ]}
         resizeMode="contain"
       />
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.navigate('Home')} //На главный экран
       >
         <Text style={styles.buttonText}>Zaczynamy</Text>
       </TouchableOpacity>
@@ -28,6 +28,7 @@ export default function WelcomeScreen({ navigation }) {
   );
 }
 
+//Дизайн
 const styles = StyleSheet.create({
   container: {
     flex: 1,

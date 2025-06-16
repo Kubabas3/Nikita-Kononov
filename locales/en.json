@@ -1,0 +1,23 @@
+{
+  "welcome": "Let’s begin",
+  "searchPlaceholder": "Search...",
+  "addWorkout": "Add Workout",
+  "settings": "Settings",
+  "themeLabel": "App Theme",
+  "langLabel": "Interface Language",
+  "light": "Light",
+  "dark": "Dark",
+  "english": "English",
+  "polish": "Polish",
+  "back": "Back",
+  "homeTitle": "Home",
+  "noWorkouts": "No workouts yet.",
+  "workoutName": "Workout Name",
+  "namePlaceholder": "Enter workout name",
+  "takePhoto": "Take Photo",
+  "getLocation": "Get Location",
+  "locationLabel": "Location",
+  "addButton": "Add Workout",
+  "dateLabel": "Date",
+  "nameTooShort": "Name must be at least 3 characters"
+}

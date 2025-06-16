@@ -1,27 +1,31 @@
 // App.js
-import React, { useEffect } from 'react';              // ← добавили useEffect
-import { View } from 'react-native';                    // ← обёртка
-import AsyncStorage from '@react-native-async-storage/async-storage';  // ← импорт AsyncStorage
-import { NavigationContainer } from '@react-navigation/native';
+import React from 'react';
+import { View } from 'react-native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppNavigator from './navigation/AppNavigator';
 import { WorkoutProvider } from './context/WorkoutContext';
+import { SettingsProvider, SettingsContext } from './context/SettingsContext';
+
+function InnerApp() {
+  const { theme } = React.useContext(SettingsContext);
+  return (
+    <SettingsProvider>
+      <WorkoutProvider>
+        <NavigationContainer theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
+         <View style={{ flex: 1 }}>
+           <AppNavigator />
+          </View>
+        </NavigationContainer>
+      </WorkoutProvider>
+    </SettingsProvider>
+  );
+}
 
 export default function App() {
-  useEffect(() => {
-    // === НИЖЕ ВРЕМЕННЫЙ БЛОК ДЛЯ ОЧИСТКИ ХРАНИЛИЩА ===
-    // AsyncStorage.clear()
-    //   .then(() => console.log('AsyncStorage wiped!'))
-    //   .catch(e => console.error('Failed to clear storage:', e));
-    // === КОНЕЦ ВРЕМЕННОГО БЛОКА ===
-  }, []);
-
   return (
-    <WorkoutProvider>
-      <NavigationContainer>
-        <View style={{ flex: 1 }}>
-          <AppNavigator />
-        </View>
-      </NavigationContainer>
-    </WorkoutProvider>
+    <SettingsProvider>
+      <InnerApp />
+    </SettingsProvider>
   );
 }
