@@ -1,11 +1,12 @@
 // screens/HomeScreen.js
+
 import React, { useContext, useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   FlatList,
   TouchableOpacity,
-  TextInput,
   StyleSheet,
   useWindowDimensions
 } from 'react-native';
@@ -15,77 +16,78 @@ import { SettingsContext } from '../context/SettingsContext';
 
 export default function HomeScreen({ navigation }) {
   const { workouts, removeWorkout } = useContext(WorkoutContext);
-  const { translations, locale } = useContext(SettingsContext);
-  const { theme } = useContext(SettingsContext);
+  const { theme, themeStyles: s, translations } = useContext(SettingsContext);
   const [query, setQuery] = useState('');
   const { width, height } = useWindowDimensions();
   const isPortrait = height >= width;
- 
 
-  // Рендер одного элемента — мемоизируем для FlatList
+  // Настраиваем шапку: фон, цвет иконки, кнопка настроек
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerStyle: { backgroundColor: s.background },
+      headerTintColor: s.icon,
+      headerRight: () => (
+        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={{ marginRight: 16 }}>
+          <Ionicons name="settings-outline" size={24} color={s.icon} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, s]);
+
+  // Рендер одного элемента списка
   const renderWorkout = useCallback(
     ({ item }) => (
-      <View style={styles.cardWrapper}>
+      <View style={[styles.cardWrapper, { backgroundColor: s.card }]}>
         <TouchableOpacity
           style={styles.card}
           onPress={() => navigation.navigate('WorkoutDetails', { workout: item })}
         >
-          <Text style={styles.title}>{item.title}</Text>
+          <Text style={[styles.title, { color: s.text }]}>{item.title}</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => removeWorkout(item.id)}
-        >
-          <Ionicons name="trash-outline" size={24} color="red" />
+        <TouchableOpacity onPress={() => removeWorkout(item.id)} style={styles.deleteButton}>
+          <Ionicons
+            name="trash-outline"
+            size={24}
+            color={theme === 'dark' ? '#ff6666' : 'red'}
+          />
         </TouchableOpacity>
       </View>
     ),
-    [navigation, removeWorkout]
+    [navigation, removeWorkout, s]
   );
 
-  // Безопасная фильтрация
-  const filteredWorkouts = workouts.filter(w => {
-    const title = typeof w.title === 'string' ? w.title : '';
+  // Фильтрация по запросу
+  const filtered = workouts.filter(w => {
+    const title = w.title || '';
     return title.toLowerCase().includes(query.trim().toLowerCase());
   });
 
-  // Добавляем кнопку Settings в header
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: true,
-      headerRight: () => (
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
-          <Ionicons
-            name="settings-outline"
-            size={24}
-            color={theme === 'dark' ? '#fff' : '#000'}
-            style={{ marginRight: 16 }}
-          />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, theme]);
-
   return (
-    <View style={isPortrait ? styles.portraitContainer : styles.landscapeContainer}>
+    <View
+      style={[
+        isPortrait ? styles.portraitContainer : styles.landscapeContainer,
+        { backgroundColor: s.background },
+      ]}
+    >
       <TextInput
-        style={styles.searchInput}
-        
+        key={theme}
+        style={[styles.searchInput, { borderColor: s.border, color: s.text }]}
         placeholder={translations.searchPlaceholder}
+        placeholderTextColor={s.secondaryText}
         value={query}
         onChangeText={setQuery}
-        placeholderTextColor={theme === 'dark' ? '#aaa' : '#666'}
       />
+
       <FlatList
-        data={filteredWorkouts}
-        keyExtractor={(item, index) =>
-          item.id != null ? item.id.toString() : index.toString()
-        }
+        data={filtered}
+        keyExtractor={item => item.id}
         renderItem={renderWorkout}
         contentContainerStyle={styles.listContent}
       />
+
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { backgroundColor: s.buttonActive }]}
         onPress={() => navigation.navigate('AddWorkout')}
       >
         <Ionicons name="add" size={32} color="#fff" />
@@ -97,15 +99,12 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   portraitContainer: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
-    flexDirection: 'column'
   },
   landscapeContainer: {
     flex: 1,
-    backgroundColor: '#fff',
     padding: 16,
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   searchInput: {
     height: 40,
@@ -115,39 +114,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc'
   },
   listContent: {
-    padding: 16
+    padding: 16,
   },
   cardWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f2f2f2',
     borderRadius: 8,
-    marginBottom: 12
+    marginBottom: 12,
   },
   card: {
     flex: 1,
-    padding: 16
+    padding: 16,
   },
   title: {
     fontSize: 16,
-    color: '#333'
   },
   deleteButton: {
-    padding: 12
+    padding: 12,
   },
   fab: {
     position: 'absolute',
     right: 24,
     bottom: 24,
-    backgroundColor: '#6f3dff',
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4
-  }
+    elevation: 4,
+  },
 });

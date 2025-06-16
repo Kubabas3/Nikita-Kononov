@@ -1,26 +1,17 @@
 // screens/WorkoutDetailsScreen.js
 
 import React, { useContext } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  Button,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
+import { ScrollView, View, Text, Image, Button, StyleSheet } from 'react-native';
 import { SettingsContext } from '../context/SettingsContext';
 
 export default function WorkoutDetailsScreen({ route, navigation }) {
   const { workout } = route.params;
-  const { translations } = useContext(SettingsContext);
+  const { theme, themeStyles: s, translations } = useContext(SettingsContext);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Название тренировки */}
-      <Text style={styles.title}>{workout.title}</Text>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: s.background }]}>
+      <Text style={[styles.title, { color: s.text }]}>{workout.title}</Text>
 
-      {/* Фото — сохраняем соотношение сторон */}
       {workout.photoUri && (
         <Image
           source={{ uri: workout.photoUri }}
@@ -29,25 +20,22 @@ export default function WorkoutDetailsScreen({ route, navigation }) {
         />
       )}
 
-      {/* Локация */}
       {workout.location && (
-        <Text style={styles.info}>
+        <Text style={[styles.info, { color: s.text }]}>
           {translations.locationLabel}: {workout.location.latitude.toFixed(4)},{' '}
           {workout.location.longitude.toFixed(4)}
         </Text>
       )}
 
-      {/* Дата */}
-      <Text style={styles.info}>
+      <Text style={[styles.info, { color: s.text }]}>
         {translations.dateLabel}: {workout.date}
       </Text>
 
-      {/* Кнопка «Назад» */}
       <View style={styles.buttonContainer}>
         <Button
           title={translations.back}
           onPress={() => navigation.goBack()}
-          color="#6f3dff"
+          color={s.buttonActive}
         />
       </View>
     </ScrollView>
@@ -57,7 +45,6 @@ export default function WorkoutDetailsScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     padding: 30,
-    backgroundColor: '#fff',
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
@@ -66,7 +53,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
-    color: '#333',
   },
   image: {
     width: '100%',
@@ -77,7 +63,6 @@ const styles = StyleSheet.create({
   info: {
     fontSize: 16,
     marginBottom: 12,
-    color: '#333',
     textAlign: 'center',
   },
   buttonContainer: {
