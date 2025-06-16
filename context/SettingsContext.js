@@ -1,16 +1,18 @@
-import React, { createContext, useState, useEffect } from 'react';
+// SettingsContext.js
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import en from '../locales/en.json';
 import pl from '../locales/pl.json';
+import lightStyles from '../theme/light';
+import darkStyles from '../theme/dark';
 
 export const SettingsContext = createContext();
 
 export function SettingsProvider({ children }) {
-  const [theme, setTheme] = useState('light');    // 'light' или 'dark'
-  const [locale, setLocale] = useState('en');     // 'en' или 'pl'
+  const [theme, setTheme] = useState('light');
+  const [locale, setLocale] = useState('en');
 
   useEffect(() => {
-    // при старте загружаем последние значения
     AsyncStorage.getItem('theme').then(t => t && setTheme(t));
     AsyncStorage.getItem('locale').then(l => l && setLocale(l));
   }, []);
@@ -25,23 +27,26 @@ export function SettingsProvider({ children }) {
     await AsyncStorage.setItem('locale', newLocale);
   };
 
-    // Импортируем словари
-  const translations = React.useMemo(() => {
-    // динамически подтягиваем нужный JSON
-    return locale === 'pl'
-      ? require('../locales/pl.json')
-      : require('../locales/en.json');
-  }, [locale]);
-  
+  const translations = useMemo(
+    () => (locale === 'pl' ? pl : en),
+    [locale]
+  );
+  const themeStyles = useMemo(
+    () => (theme === 'light' ? lightStyles : darkStyles),
+    [theme]
+  );
 
   return (
-     <SettingsContext.Provider value={{
-      theme,
-      locale,
-      changeTheme,
-      changeLocale,
-      translations,           // добавляем сюда переводы
-    }}>
+    <SettingsContext.Provider
+      value={{
+        theme,
+        locale,
+        changeTheme,
+        changeLocale,
+        translations,
+        themeStyles,
+      }}
+    >
       {children}
     </SettingsContext.Provider>
   );
