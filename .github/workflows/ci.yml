@@ -1,39 +1,35 @@
-name: 📦 CI/CD Build
+name: CI/CD Build
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build-android:
-    name: Сборка Android (EAS)
     runs-on: ubuntu-latest
-    # берём токен из секретов репозитория и кладём в env
-    env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
     steps:
-      - name: 🛎 Checkout repository
-        uses: actions/checkout@v3
+      # 1. Чекаутим репозиторий
+      - uses: actions/checkout@v3
 
-      - name: 🥇 Setup Node.js
-        uses: actions/setup-node@v3
+      # 2. Настраиваем Node.js
+      - uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: 📦 Install dependencies
+      # 3. Устанавливаем зависимости
+      - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: 🚀 Install EAS CLI
+      # 4. Устанавливаем EAS CLI
+      - name: Install EAS CLI
         run: npm install -g eas-cli@latest
 
-      - name: 🔧 (Optional) Login to Expo (EAS CLI сам возьмёт EXPO_TOKEN)
-        # Этот шаг необязателен: EAS CLI автоматически использует EXPO_TOKEN
-        # run: eas login --token $EXPO_TOKEN
+      # 5. Логинимся в Expo (секрет EXPO_TOKEN хранится в Settings → Secrets)
+      - name: Login to Expo
+        run: eas login --token ${{ secrets.EXPO_TOKEN }}
 
-      - name: 📱 Build Android (non-interactive)
+      # 6. Запускаем сборку Android
+      - name: Build Android (EAS)
         run: eas build --platform android --non-interactive
