@@ -1,0 +1,44 @@
+name: 📦 CI/CD Build
+
+# Запускать на каждый пуш в main (можно добавить теги или PR)
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-android:
+    name: Сборка Android (EAS)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) получаем код
+      - uses: actions/checkout@v3
+
+      # 2) устанавливаем Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # 3) устанавливаем зависимости
+      - run: npm ci
+
+      # 4) ставим EAS CLI
+      - run: npm install -g eas-cli@latest
+
+      # 5) логинимся в Expo (EAS_TOKEN — секрет)
+      - run: eas login --token ${{ secrets.EAS_TOKEN }}
+
+      # 6) запускаем сборку Android в non-interactive режиме
+      - run: eas build --platform android --non-interactive
+
+      # 7) (опционально) дожидаемся завершения и скачиваем артефакт
+      # - run: |
+      #     BUILD_ID=$(eas build:list --platform android --limit 1 --status finished --json | jq -r '.[0].id')
+      #     eas build:get --platform android --id $BUILD_ID --output build/android.apk
+
+      # 8) (опционально) загружаем APK как артефакт Actions
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: android-apk
+      #     path: build/android.apk
