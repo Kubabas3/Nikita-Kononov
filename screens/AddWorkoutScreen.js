@@ -17,7 +17,7 @@ import { SettingsContext } from '../context/SettingsContext';
 
 export default function AddWorkoutScreen({ navigation }) {
   const { addWorkout } = useContext(WorkoutContext);
-  const { theme, themeStyles: s, translations } = useContext(SettingsContext);
+  const { themeStyles: s, translations } = useContext(SettingsContext);
 
   const [title, setTitle] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -30,8 +30,9 @@ export default function AddWorkoutScreen({ navigation }) {
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ quality: 0.7 });
-    if (!result.cancelled) {
-      setPhotoUri(result.uri);
+    // в новой версии expo-image-picker результат в result.assets[0].uri
+    if (!result.canceled && result.assets?.length) {
+      setPhotoUri(result.assets[0].uri);
     }
   };
 
@@ -54,13 +55,16 @@ export default function AddWorkoutScreen({ navigation }) {
       Alert.alert(translations.workoutName, translations.nameTooShort);
       return;
     }
+    // теперь photoUri правильно передаётся в контекст
     addWorkout(trimmed, photoUri, location);
     navigation.goBack();
   };
 
   return (
     <View style={[styles.container, { backgroundColor: s.background }]}>
-      <Text style={[styles.label, { color: s.text }]}>{translations.workoutName}</Text>
+      <Text style={[styles.label, { color: s.text }]}>
+        {translations.workoutName}
+      </Text>
       <TextInput
         style={[styles.input, { borderColor: s.border, color: s.text }]}
         placeholder={translations.namePlaceholder}
@@ -75,7 +79,13 @@ export default function AddWorkoutScreen({ navigation }) {
       >
         <Text style={styles.buttonText}>{translations.takePhoto}</Text>
       </TouchableOpacity>
-      {photoUri && <Image source={{ uri: photoUri }} style={styles.preview} />}
+      {photoUri && (
+        <Image
+          source={{ uri: photoUri }}
+          style={styles.preview}
+          resizeMode="contain"
+        />
+      )}
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: s.buttonActive }]}
@@ -85,7 +95,8 @@ export default function AddWorkoutScreen({ navigation }) {
       </TouchableOpacity>
       {location && (
         <Text style={[styles.locationText, { color: s.text }]}>
-          {translations.locationLabel}: {location.latitude.toFixed(4)}, {location.longitude.toFixed(4)}
+          {translations.locationLabel}: {location.latitude.toFixed(4)},{' '}
+          {location.longitude.toFixed(4)}
         </Text>
       )}
 
@@ -112,7 +123,7 @@ const styles = StyleSheet.create({
   input:           { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 16 },
   button:          { padding: 12, borderRadius: 8, alignItems: 'center', marginBottom: 12 },
   buttonText:      { color: '#fff', fontSize: 14 },
-  preview:         { width: '100%', height: 200, marginBottom: 12, borderRadius: 8, resizeMode: 'contain' },
+  preview:         { width: '100%', height: 200, marginBottom: 12, borderRadius: 8 },
   locationText:    { fontSize: 14, marginBottom: 16 },
   saveButton:      { padding: 14, borderRadius: 8, alignItems: 'center', marginTop: 24 },
   saveButtonText:  { color: '#fff', fontSize: 16 },

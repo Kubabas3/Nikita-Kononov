@@ -1,98 +1,143 @@
 import React, { useContext } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SettingsContext } from '../context/SettingsContext';
 
 export default function SettingsScreen({ navigation }) {
-  const {
-    translations,
-    locale,
-    theme,
-    changeLocale,
-    changeTheme,
-    themeStyles
-  } = useContext(SettingsContext);
-  const s = themeStyles;
+  const { theme, changeTheme, locale, changeLocale, translations } = useContext(SettingsContext);
+  const styles = getStyles(theme);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: s.background }]}>      
-      {/* Заголовок */}
-      <View style={styles.titleWrapper}>
-        <Text style={[styles.title, { color: s.text }]}>
-          {translations.settings}
-        </Text>
+    <View style={styles.container}>
+      {/* Заголовок по центру */}
+      <Text style={styles.title}>{translations.settings}</Text>
+
+      {/* Тема приложения */}
+      <Text style={styles.label}>{translations.themeLabel}</Text>
+      <View style={styles.switchRow}>
+        {['light','dark'].map(t => (
+          <TouchableOpacity
+            key={t}
+            style={[
+              styles.themeButton,
+              theme === t && styles.themeButtonActive
+            ]}
+            onPress={() => changeTheme(t)}
+          >
+            <Text
+              style={[
+                styles.themeText,
+                theme === t && styles.themeTextActive
+              ]}
+            >
+              {translations[t]}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Выбор темы */}
-      <Text style={[styles.sectionLabel, { color: s.secondaryText }]}> {translations.themeLabel}</Text>
-      <View style={styles.themeRow}>
-        <TouchableOpacity
-          style={[
-            styles.themeBtn,
-            { backgroundColor: theme === 'light' ? s.buttonActive : s.buttonInactive }
-          ]}
-          onPress={() => changeTheme('light')}
-        >
-          <Text style={[styles.btnTxt, { color: theme === 'light' ? '#fff' : s.text }]}>
-            {translations.light}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.themeBtn,
-            { backgroundColor: theme === 'dark' ? s.buttonActive : s.buttonInactive }
-          ]}
-          onPress={() => changeTheme('dark')}
-        >
-          <Text style={[styles.btnTxt, { color: theme === 'dark' ? '#fff' : s.text }]}>
-            {translations.dark}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Выбор языка */}
-      <Text style={[styles.sectionLabel, { color: s.secondaryText }]}>{translations.langLabel}</Text>
-      <View style={[styles.pickerContainer, { borderColor: s.border }]}>        
+      {/* Язык интерфейса */}
+      <Text style={[styles.label, { marginTop: 24 }]}>
+        {translations.langLabel}
+      </Text>
+      <View style={styles.pickerWrapper}>
         <Picker
           selectedValue={locale}
-          style={{ color: s.text }}
-          onValueChange={value => changeLocale(value)}
+          onValueChange={changeLocale}
+          style={styles.picker}
+          dropdownIconColor={theme === 'dark' ? '#fff' : '#333'}
         >
           <Picker.Item label="English" value="en" />
-          <Picker.Item label="Polski" value="pl" />
+          <Picker.Item label="Polski"  value="pl" />
         </Picker>
       </View>
 
-      {/* Кнопка “Back” */}
+      {/* Кнопка «Powrót» внизу */}
       <TouchableOpacity
-        style={[styles.backButton, { backgroundColor: s.buttonActive }]}
+        style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
-        <Text style={[styles.backButtonText, { color: '#fff' }]}>
-          {translations.back}
-        </Text>
+        <Text style={styles.backText}>{translations.back}</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  titleWrapper: { alignItems: 'center', marginVertical: 24 },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  sectionLabel: { fontSize: 16, marginBottom: 8 },
-  themeRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-  themeBtn: { flex: 1, marginHorizontal: 4, paddingVertical: 12, borderRadius: 20, alignItems: 'center' },
-  btnTxt: { fontSize: 14, fontWeight: '600' },
-  pickerContainer: { borderWidth: 1, borderRadius: 8, marginBottom: 24 },
-  backButton: {
-    alignSelf: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    width: '60%',
-    marginTop: 'auto',
-    marginBottom: 32
-  },
-  backButtonText: { fontSize: 16, textAlign: 'center' }
-});
+const getStyles = theme => {
+  const isDark = theme === 'dark';
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 16,
+      backgroundColor: isDark ? '#000' : '#fff',
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: 'bold',
+      color: isDark ? '#fff' : '#333',
+      textAlign: 'center',
+      marginVertical: 16,
+    },
+    label: {
+      fontSize: 16,
+      color: isDark ? '#ddd' : '#555',
+      marginBottom: 8,
+    },
+    switchRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    themeButton: {
+      flex: 1,
+      paddingVertical: 12,
+      marginHorizontal: 4,
+      borderRadius: 8,
+      backgroundColor: isDark ? '#222' : '#eee',
+      alignItems: 'center',
+    },
+    themeButtonActive: {
+      backgroundColor: '#6f3dff',
+    },
+    themeText: {
+      color: isDark ? '#fff' : '#333',
+      fontSize: 16,
+      fontWeight: '500',
+    },
+    themeTextActive: {
+      color: '#fff',
+    },
+    pickerWrapper: {
+      borderWidth: 1,
+      borderColor: isDark ? '#555' : '#ccc',
+      borderRadius: 8,
+      overflow: 'hidden',
+      backgroundColor: isDark ? '#111' : '#fafafa',
+    },
+    picker: {
+      height: 48,
+      width: '100%',
+      color: isDark ? '#fff' : '#333',
+      backgroundColor: isDark ? '#111' : '#fafafa',
+      marginVertical: Platform.OS === 'android' ? 0 : -4, // убираем лишний отступ на iOS/Web
+    },
+    backButton: {
+      marginTop: 'auto',
+      backgroundColor: '#6f3dff',
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginBottom: 40,
+    },
+    backText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+  });
+};
