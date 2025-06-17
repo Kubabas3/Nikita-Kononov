@@ -15,10 +15,10 @@ export default function SettingsScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Заголовок по центру */}
+      {/* Nagłówek pośrodku */}
       <Text style={styles.title}>{translations.settings}</Text>
 
-      {/* Тема приложения */}
+      {/* motyw aplikacji */}
       <Text style={styles.label}>{translations.themeLabel}</Text>
       <View style={styles.switchRow}>
         {['light','dark'].map(t => (
@@ -42,7 +42,7 @@ export default function SettingsScreen({ navigation }) {
         ))}
       </View>
 
-      {/* Язык интерфейса */}
+      {/* Język interfejsu */}
       <Text style={[styles.label, { marginTop: 24 }]}>
         {translations.langLabel}
       </Text>
@@ -58,7 +58,7 @@ export default function SettingsScreen({ navigation }) {
         </Picker>
       </View>
 
-      {/* Кнопка «Powrót» внизу */}
+      {/* Przycisk „Powrót” na dole */}
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
@@ -69,6 +69,7 @@ export default function SettingsScreen({ navigation }) {
   );
 }
 
+// style ekranu
 const getStyles = theme => {
   const isDark = theme === 'dark';
   return StyleSheet.create({

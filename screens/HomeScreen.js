@@ -21,7 +21,7 @@ export default function HomeScreen({ navigation }) {
   const { width, height } = useWindowDimensions();
   const isPortrait = height >= width;
 
-  // Настраиваем шапку: фон, цвет иконки, кнопка настроек
+  // Konfigurujemy nagłówek: tło, kolor ikony, przycisk ustawień
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
@@ -35,7 +35,7 @@ export default function HomeScreen({ navigation }) {
     });
   }, [navigation, s]);
 
-  // Рендер одного элемента списка
+  // Renderowanie jednego elementu listy
   const renderWorkout = useCallback(
     ({ item }) => (
       <View style={[styles.cardWrapper, { backgroundColor: s.card }]}>
@@ -57,7 +57,7 @@ export default function HomeScreen({ navigation }) {
     [navigation, removeWorkout, s]
   );
 
-  // Фильтрация по запросу
+  // Filtrowanie według zapytania
   const filtered = workouts.filter(w => {
     const title = w.title || '';
     return title.toLowerCase().includes(query.trim().toLowerCase());
@@ -96,6 +96,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+// style ekranu
 const styles = StyleSheet.create({
   portraitContainer: {
     flex: 1,
