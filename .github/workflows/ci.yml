@@ -27,8 +27,7 @@ jobs:
       - run: npm install -g eas-cli@latest
 
       # 5) логинимся в Expo (EAS_TOKEN — секрет)
-      - run: eas login --token ${{ secrets.EAS_TOKEN }}
-
+      
       # 6) запускаем сборку Android в non-interactive режиме
       - run: eas build --platform android --non-interactive
 
